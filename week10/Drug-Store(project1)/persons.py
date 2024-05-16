@@ -1,4 +1,5 @@
 import store
+from datetime import datetime
 
 
 class Personnel:
@@ -12,8 +13,11 @@ class Personnel:
             if personnel.personnel_id == args[3] or personnel.personnel_id == kwargs["personnel_id"]:
                 raise ValueError("This ID already exists in personnel IDs")
         else:
-            assert (isinstance(args[3], int) and 999 > args[3] > 9999) or \
-            (isinstance(kwargs["personnel_id"], int) and 999 > kwargs["personnel_id"] > 9999), "Personnel ID must be 4-digits integer"
+            assert (isinstance(args[3], int) and 999 > args[3] > 9999 and
+                    args[3] not in [s.personnel_id for s in Personnel.personnel]) or \
+            (isinstance(kwargs["personnel_id"], int) and 999 > kwargs["personnel_id"] > 9999 and
+             kwargs["personnel_id"] not in [s.personnel_id for s in Personnel.personnel]),\
+                "Personnel ID must be 4-digits integer and unique"
         assert (isinstance(args[4], (int, float)) and args[4] > 0) or \
                (isinstance(kwargs["salary"], (int, float)) and kwargs["salary"] > 0), "salary must be a positive number"
         assert (isinstance(args[5], str) and args[5].lower() in ("intern", "junior", "senior")) or \
@@ -58,11 +62,17 @@ class Manager(Personnel):
         self.accesses = ["hire personnel", "check balance", "change salary", "change position", "change phone",
                          "change email"]
         self.menu = {
-            "hire personnel": self.hire,
-            "check balance": self.check_balance,
-            "change salary of employee": self.change_salary,
-            "change position of employee": self.change_position,
-            "change email of store": self.change_email,
+            "hire personnel": self.hire(input("What is employee name: "), input("What is employee age: "),
+                                        self.the_store, int(input("What is employee personnel ID: ")),
+                                        float(input("What is employee salary: ")), input("What is employee position"),
+                                        input("What is employee work schedule: "), input("What is employee username: "),
+                                        input("What is employee password: ")),
+            "check balance": self.check_balance(),
+            "change salary of employee": self.change_salary(int(input("What is employee ID: ")),
+                                                            float(input("What is employee new salary: "))),
+            "change position of employee": self.change_position(int(input("What is employee ID: ")),
+                                                                input("What is employee new position:")),
+            "change email of store": self.change_email(input("What is new email address: ")),
             "back to main menu": None
         }
 
@@ -94,8 +104,11 @@ class Pharmacist(Personnel):
         super().__init__(name, age, the_store, personnel_id, salary, position, work_schedule, username, password)
         self.accesses = ["make new drug", "add drug to store", "sell drug"]
         self.menu = {
-            "define new drug": self.def_drug,
-            "change quantity of a drug": self.change_quantity
+            "define new drug": self.def_drug(input("What is drug name: "), input("What is drug's company: "),
+                                input("what categories you suggest for this drug(separate by space):").split(" "),
+                                datetime.strptime(input("What is drug exp-date(yyyy-mm-dd): "), "%Y-%m-%d"),
+                                float(input("What is the drug's price: ")), input("What is drug qty: ")),
+            "change quantity of a drug": self.change_quantity(input("What is drug name: "), int(input("What is drug new qty: ")))
         }
 
     @staticmethod
@@ -133,8 +146,8 @@ class SalesClerk(Personnel):
         super().__init__(name, age, the_store, personnel_id, salary, position, work_schedule, username, password)
         self.accesses = ["sell drug"]
         self.menu = {
-            "sell drug": self.sell,
-            "show all drugs": self.show_all_drugs,
+            "sell drug": self.sell(input("What is drug name: "), int(input("How many drugs you want to sell: "))),
+            "show all drugs": self.show_all_drugs(),
 
         }
 
